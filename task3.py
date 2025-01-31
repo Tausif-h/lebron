@@ -23,7 +23,6 @@ def spoof_pkt(pkt):
             data = pkt[TCP].payload.load
             print("*** %s, length: %d" % (data, len(data)))
             
-            # Modify the packet payload
             newdata = data.replace(b'tausif', b'AAAAA')
             send(newpkt / newdata)
         else:
